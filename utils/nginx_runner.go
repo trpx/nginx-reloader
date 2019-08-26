@@ -14,7 +14,7 @@ type NginxRunner struct {
 	NginxOptions []string
 }
 
-func (r NginxRunner) StartNginx() *exec.Cmd {
+func (r *NginxRunner) StartNginx() *exec.Cmd {
 	r.listenSignals()
 	cmd := exec.Command("nginx", r.NginxOptions...)
 	err := cmd.Start()
@@ -23,17 +23,18 @@ func (r NginxRunner) StartNginx() *exec.Cmd {
 	}
 	r.nginxProc = cmd.Process
 	r.forwardSignals()
+	r.reloadOnChange()
 	return cmd
 }
 
-func (r NginxRunner) listenSignals() {
+func (r *NginxRunner) listenSignals() {
 	signal.Notify(
 		r.SignalsChan,
 		syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGKILL, syscall.SIGABRT,
 	)
 }
 
-func (r NginxRunner) forwardSignals() {
+func (r *NginxRunner) forwardSignals() {
 	// Forward signals to nginx process
 	go func() {
 		for sig := range r.SignalsChan {
@@ -45,7 +46,7 @@ func (r NginxRunner) forwardSignals() {
 	}()
 }
 
-func (r NginxRunner) reloadOnChange() {
+func (r *NginxRunner) reloadOnChange() {
 	go func() {
 		for {
 			<-r.ChangeChan
@@ -54,7 +55,7 @@ func (r NginxRunner) reloadOnChange() {
 	}()
 }
 
-func (r NginxRunner) reloadNginx() {
+func (r *NginxRunner) reloadNginx() {
 	Stdoutf("conf directories change detected, sending reload signal to nginx")
 	err := r.nginxProc.Signal(syscall.SIGHUP)
 	if err != nil {

@@ -14,10 +14,9 @@ func calcDirChecksum(dir string) (dirHash string) {
 	}
 
 	for _, fi := range fileInfos {
-		if !fi.IsDir() && strings.HasSuffix(fi.Name(), ".conf") {
+		if (!fi.IsDir()) && strings.HasSuffix(fi.Name(), ".conf") {
 			dirHash += fmt.Sprintf("%s %d\n", fi.Name(), fi.ModTime().Unix())
 		}
 	}
-
 	return dirHash
 }

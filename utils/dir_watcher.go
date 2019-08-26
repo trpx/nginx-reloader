@@ -11,7 +11,7 @@ type DirWatcher struct {
 	PollEvery   time.Duration
 }
 
-func (w DirWatcher) Watch() {
+func (w *DirWatcher) Watch() {
 	go func() {
 		for {
 			time.Sleep(w.PollEvery)
@@ -25,13 +25,13 @@ func (w DirWatcher) Watch() {
 	}()
 }
 
-func (w DirWatcher) CalcChecksum() {
+func (w *DirWatcher) CalcChecksum() {
 	w.dirChecksum = ""
 	for _, watchedDir := range w.WatchedDirs {
 		w.dirChecksum += calcDirChecksum(watchedDir) + ";"
 	}
 }
 
-func (w DirWatcher) onChange() {
+func (w *DirWatcher) onChange() {
 	w.ChangeChan <- true
 }

@@ -14,4 +14,4 @@ COPY --from=0 /go/bin/nginx-reloader /usr/local/bin/
 
 ENTRYPOINT ["nginx-reloader"]
 
-CMD ["1", "/etc/nginx/conf.d", "--", "-g", "daemon", "off"]
+CMD ["1", "/etc/nginx/conf.d", "--", "-g", "daemon off;"]

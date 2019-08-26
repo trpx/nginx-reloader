@@ -33,7 +33,6 @@ func ParseDirsOptions() (pollEvery int, dirs []string, options []string) {
 		}
 	}
 	dirs = os.Args[2:separatorIndex]
-
 	return pollEvery, dirs, options
 }
 
