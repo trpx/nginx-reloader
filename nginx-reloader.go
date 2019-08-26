@@ -1,7 +1,7 @@
 package main
 
 import (
-	"./utils"
+	"github.com/trpx/nginx-reloader/utils"
 	"os"
 	"time"
 )
