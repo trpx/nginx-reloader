@@ -1,7 +1,7 @@
 
 # Alpha
 
-So be warned: no tests yet, totally untested
+Be warned: for now tested only manually, seems too be working, but automated tests are yet to come.
 
 ## Usage
 
