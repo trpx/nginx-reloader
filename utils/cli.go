@@ -1,25 +1,24 @@
 package utils
 
 import (
-	"fmt"
 	"os"
 	"strconv"
 )
 
+const USAGE = "usage: nginx-reloader <POLL_EVERY_SECONDS> [WATCHED_DIR...] -- [NGINX_CLI_OPTION...]"
+
 func ParseDirsOptions() (pollEvery int, dirs []string, options []string) {
 	if len(os.Args) < 3 {
-		exitCode := 1
-		if len(os.Args) == 2 && (os.Args[1] == "-h" || os.Args[1] == "--help") {
-			exitCode = 0
-		}
-		usage()
-		os.Exit(exitCode)
+		// todo refactor to 0 required cli args
+		//if len(os.Args) == 2 && (os.Args[1] == "-h" || os.Args[1] == "--help") {
+		//
+		//}
+		Panicf(USAGE)
 	}
 
 	pollEvery, err := strconv.Atoi(os.Args[1])
 	if err != nil {
-		usage()
-		os.Exit(1)
+		Panicf(USAGE)
 	}
 
 	separatorIndex := len(os.Args)
@@ -34,8 +33,4 @@ func ParseDirsOptions() (pollEvery int, dirs []string, options []string) {
 	}
 	dirs = os.Args[2:separatorIndex]
 	return pollEvery, dirs, options
-}
-
-func usage() {
-	fmt.Println("usage: nginx-reloader <POLL_EVERY_SECONDS> [WATCHED_DIR...] -- [NGINX_CLI_OPTION...]")
 }

@@ -10,7 +10,7 @@ func calcDirChecksum(dir string) (dirHash string) {
 
 	fileInfos, err := ioutil.ReadDir(dir)
 	if err != nil {
-		Fatalf("couldn't list directory %s:\n%v\n", dir, err)
+		Panicf("couldn't list directory %s:\n%v\n", dir, err)
 	}
 
 	for _, fi := range fileInfos {

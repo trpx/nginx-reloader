@@ -9,6 +9,11 @@ import (
 func main() {
 
 	pollEvery, watchedDirs, nginxOptions := utils.ParseDirsOptions()
+	defer func() {
+		if r := recover(); r != nil {
+			utils.Fatalf("%v", r)
+		}
+	}()
 
 	watcher := utils.DirWatcher{
 		WatchedDirs: watchedDirs,
@@ -30,6 +35,6 @@ func main() {
 
 	err := cmd.Wait()
 	if err != nil {
-		utils.Fatalf("nginx process encountered an error during execution:\n%v\n", err)
+		utils.Panicf("nginx process encountered an error during execution:\n%v\n", err)
 	}
 }
