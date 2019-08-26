@@ -7,13 +7,9 @@ import (
 )
 
 func ParseDirsOptions() (pollEvery int, dirs []string, options []string) {
-	if len(os.Args) == 1 ||
-		(len(os.Args) == 2 &&
-			(os.Args[1] == "-h" ||
-				os.Args[1] == "--help")) {
-
+	if len(os.Args) < 3 {
 		exitCode := 1
-		if len(os.Args) == 2 {
+		if len(os.Args) == 2 && (os.Args[1] == "-h" || os.Args[1] == "--help") {
 			exitCode = 0
 		}
 		usage()
@@ -36,7 +32,7 @@ func ParseDirsOptions() (pollEvery int, dirs []string, options []string) {
 			break
 		}
 	}
-	dirs = os.Args[1:separatorIndex]
+	dirs = os.Args[2:separatorIndex]
 
 	return pollEvery, dirs, options
 }
