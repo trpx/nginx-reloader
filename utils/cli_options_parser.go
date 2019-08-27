@@ -8,11 +8,12 @@ import (
 	"time"
 )
 
-const USAGE = "usage: nginx-reloader [--poll-interval SECONDS] [--watch DIR [DIR ...]] [--nginx CLI_OPTION [CLI_OPTION ...]]"
+const USAGE = "usage: nginx-reloader [--interval SECONDS] [--watch DIR [DIR ...]] [--nginx CLI_OPTION [CLI_OPTION ...]]"
+
 const DEFAULT_POLL_INTERVAL = 3 * time.Second
 
 var DEFAULT_DIRS = []string{"/etc/nginx/conf.d"}
-var DEFAULT_NGINX_OPTIONS []string
+var DEFAULT_NGINX_OPTIONS = []string{"-g", "daemon off;"}
 
 func ParseOptions() (pollInterval time.Duration, watchedDirs []string, nginxOptions []string, err error) {
 	defer func() {
@@ -40,14 +41,21 @@ type argParser struct {
 func (p *argParser) parse() (interval time.Duration, dirs []string, options []string) {
 	switch len(os.Args) {
 	case 1:
-		p.interval = DEFAULT_POLL_INTERVAL
-		p.dirs = DEFAULT_DIRS
-		p.options = DEFAULT_NGINX_OPTIONS
 	case 2:
 		Panicf(USAGE)
 	default:
 		p.args = os.Args[1:]
 		p.parseStart()
+	}
+
+	if !p.parsedInterval {
+		p.interval = DEFAULT_POLL_INTERVAL
+	}
+	if !p.parsedWatch {
+		p.dirs = DEFAULT_DIRS
+	}
+	if !p.parsedOptions {
+		p.options = DEFAULT_NGINX_OPTIONS
 	}
 
 	return p.interval, p.dirs, p.options
@@ -60,7 +68,7 @@ func (p *argParser) parseStart() {
 	switch p.args[0] {
 	case "--watch":
 		p.parseWatch()
-	case "--poll-interval":
+	case "--interval":
 		p.parseInterval()
 	case "--nginx":
 		p.parseOptions()
@@ -80,7 +88,7 @@ func (p *argParser) parseWatch() {
 	p.dirs = append(p.dirs, p.args[1])
 	for idx, el := range p.args[2:] {
 		switch el {
-		case "--poll-interval":
+		case "--interval":
 			p.args = p.args[idx+2:]
 			p.parseInterval()
 			return
@@ -107,15 +115,15 @@ func (p *argParser) parseWatch() {
 
 func (p *argParser) parseInterval() {
 	if p.parsedInterval {
-		Panicf("duplicate '--poll-interval' option\n" + USAGE)
+		Panicf("duplicate '--interval' option\n" + USAGE)
 	}
 	p.parsedInterval = true
 	if len(p.args) < 2 {
-		Panicf("empty '--poll-interval' option\n" + USAGE)
+		Panicf("empty '--interval' option\n" + USAGE)
 	}
 	interval, err := strconv.Atoi(p.args[1])
 	if err != nil {
-		Panicf("invalid value for '--poll-interval' option, expected an integer, got '%v'", p.args[1])
+		Panicf("invalid value for '--interval' option, expected an integer, got '%v'", p.args[1])
 	}
 	if interval < 0 {
 		Panicf("watch interval must be >= 0, got '%v'", interval)
@@ -129,6 +137,7 @@ func (p *argParser) parseOptions() {
 	if len(p.args) < 2 {
 		Panicf("empty '--nginx' option\n" + USAGE)
 	}
+	p.parsedOptions = true
 	for _, el := range p.args[1:] {
 		p.options = append(p.options, el)
 	}

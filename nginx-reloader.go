@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/trpx/nginx-reloader/utils"
-	"os"
 	"time"
 )
 
@@ -15,9 +14,6 @@ func main() {
 	if err != nil {
 		utils.Fatalf("%v", err)
 	}
-
-	fmt.Printf("%v\n%v\n%v\n", pollInterval, watchedDirs, nginxOptions)
-	os.Exit(0)
 
 	err = StartNginxReloader(pollInterval, watchedDirs, nginxOptions)
 
@@ -36,7 +32,7 @@ func StartNginxReloader(pollInterval time.Duration, watchedDirs []string, nginxO
 
 	watcher := utils.MakeDirWatcher(
 		watchedDirs,
-		time.Duration(pollInterval)*time.Second,
+		pollInterval,
 	)
 
 	watcher.CalcChecksum()
