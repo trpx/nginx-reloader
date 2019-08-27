@@ -15,14 +15,14 @@ const DEFAULT_POLL_INTERVAL = 3 * time.Second
 var DEFAULT_DIRS = []string{"/etc/nginx/conf.d"}
 var DEFAULT_NGINX_OPTIONS = []string{"-g", "daemon off;"}
 
-func ParseOptions() (pollInterval time.Duration, watchedDirs []string, nginxOptions []string, err error) {
+func ParseOptions(args []string) (pollInterval time.Duration, watchedDirs []string, nginxOptions []string, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = errors.New(fmt.Sprintf("%v", r))
 		}
 	}()
 	parser := argParser{}
-	pollInterval, watchedDirs, nginxOptions = parser.parse()
+	pollInterval, watchedDirs, nginxOptions = parser.parse(args)
 	return pollInterval, watchedDirs, nginxOptions, err
 }
 
@@ -38,13 +38,13 @@ type argParser struct {
 	args []string
 }
 
-func (p *argParser) parse() (interval time.Duration, dirs []string, options []string) {
-	switch len(os.Args) {
+func (p *argParser) parse(args []string) (interval time.Duration, dirs []string, options []string) {
+	switch len(args) {
 	case 1:
 	case 2:
 		Panicf(USAGE)
 	default:
-		p.args = os.Args[1:]
+		p.args = args[1:]
 		p.parseStart()
 	}
 

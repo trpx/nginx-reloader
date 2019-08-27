@@ -4,13 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"github.com/trpx/nginx-reloader/utils"
+	"os"
 	"time"
 )
 
 // CLI
 func main() {
 
-	pollInterval, watchedDirs, nginxOptions, err := utils.ParseOptions()
+	pollInterval, watchedDirs, nginxOptions, err := utils.ParseOptions(os.Args)
 	if err != nil {
 		utils.Fatalf("%v", err)
 	}
