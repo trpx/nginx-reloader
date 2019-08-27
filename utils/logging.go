@@ -8,10 +8,11 @@ import (
 
 const TOKEN = "[nginx-reloader] "
 
-var stdoutLogger = log.New(os.Stdout, "", log.LstdFlags)
+var stdoutLogger = log.New(os.Stdout, "", 0)
+var stderrLogger = log.New(os.Stderr, "", 0)
 
 func Fatalf(format string, v ...interface{}) {
-	log.Fatalf(TOKEN+"[fatal] "+format, v...)
+	stderrLogger.Fatalf(TOKEN+"[fatal] "+format, v...)
 }
 
 func Stdoutf(format string, v ...interface{}) {
@@ -19,7 +20,7 @@ func Stdoutf(format string, v ...interface{}) {
 }
 
 // func Stderrf(format string, v ...interface{}) {
-//     log.Printf(TOKEN+"[error] "+format, v...)
+//     stderrLogger.Printf(TOKEN+"[error] "+format, v...)
 // }
 
 func Panicf(format string, v ...interface{}) {

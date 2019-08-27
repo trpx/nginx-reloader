@@ -9,9 +9,18 @@ import (
 
 type NginxRunner struct {
 	nginxProc    *os.Process
-	SignalsChan  chan os.Signal
-	ChangeChan   chan bool
+	signalsChan  chan os.Signal
+	changeChan   chan bool
 	NginxOptions []string
+}
+
+func MakeNginxRunner(changeChan chan bool, nginxOptions []string) NginxRunner {
+	nginxRunner := NginxRunner{
+		signalsChan:  make(chan os.Signal),
+		changeChan:   changeChan,
+		NginxOptions: nginxOptions,
+	}
+	return nginxRunner
 }
 
 func (r *NginxRunner) StartNginx() *exec.Cmd {
@@ -29,7 +38,7 @@ func (r *NginxRunner) StartNginx() *exec.Cmd {
 
 func (r *NginxRunner) listenSignals() {
 	signal.Notify(
-		r.SignalsChan,
+		r.signalsChan,
 		syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGKILL, syscall.SIGABRT,
 	)
 }
@@ -37,7 +46,7 @@ func (r *NginxRunner) listenSignals() {
 func (r *NginxRunner) forwardSignals() {
 	// Forward signals to nginx process
 	go func() {
-		for sig := range r.SignalsChan {
+		for sig := range r.signalsChan {
 			err := r.nginxProc.Signal(sig)
 			if err != nil {
 				Panicf("couldn't send signal to nginx process:\n%v\n", err)
@@ -49,7 +58,7 @@ func (r *NginxRunner) forwardSignals() {
 func (r *NginxRunner) reloadOnChange() {
 	go func() {
 		for {
-			<-r.ChangeChan
+			<-r.changeChan
 			r.reloadNginx()
 		}
 	}()
