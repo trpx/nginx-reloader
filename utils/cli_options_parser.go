@@ -7,37 +7,48 @@ import (
 	"time"
 )
 
-const USAGE = "usage: nginx-reloader [--interval SECONDS] [--watch DIR [DIR ...]] [-- NGINX_ENTRYPOINT [NGINX OPTION [NGINX_OPTION ...]]]"
+const USAGE = `usage: nginx-reloader [--cooldown SECONDS] [--watch DIR [DIR ...]] [--nginx-command NGINX_EXECUTABLE [NGINX_EXECUTABLE_OPTION [NGINX_EXECUTABLE_OPTION ...]]]
+options:
+--cooldown	
+	seconds to wait after each reload
+	default: 3
+--watch
+	space-separated directories to watch
+	default: /etc/nginx/conf.d
+--nginx-command
+	command to start nginx with
+	default: nginx -g "daemon off;"
+`
 
-const DEFAULT_POLL_INTERVAL = 3 * time.Second
+const DEFAULT_POLL_COOLDOWN = 3 * time.Second
 
 var DEFAULT_DIRS = []string{"/etc/nginx/conf.d"}
 var DEFAULT_NGINX_COMMAND = []string{"nginx", "-g", "daemon off;"}
 
-func ParseOptions(args []string) (pollInterval time.Duration, watchedDirs []string, nginxCommand []string, err error) {
+func ParseOptions(args []string) (pollCooldown time.Duration, watchedDirs []string, nginxCommand []string, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = errors.New(fmt.Sprintf("%v", r))
 		}
 	}()
 	parser := argParser{}
-	pollInterval, watchedDirs, nginxCommand = parser.parse(args)
-	return pollInterval, watchedDirs, nginxCommand, err
+	pollCooldown, watchedDirs, nginxCommand = parser.parse(args)
+	return pollCooldown, watchedDirs, nginxCommand, err
 }
 
 type argParser struct {
-	interval     time.Duration
+	cooldown     time.Duration
 	dirs         []string
 	nginxCommand []string
 
-	parsedInterval     bool
+	parsedCooldown     bool
 	parsedWatch        bool
 	parsedNginxCommand bool
 
 	args []string
 }
 
-func (p *argParser) parse(args []string) (interval time.Duration, dirs []string, nginxCommand []string) {
+func (p *argParser) parse(args []string) (cooldown time.Duration, dirs []string, nginxCommand []string) {
 	switch len(args) {
 	case 1:
 	case 2:
@@ -47,8 +58,8 @@ func (p *argParser) parse(args []string) (interval time.Duration, dirs []string,
 		p.parseStart()
 	}
 
-	if !p.parsedInterval {
-		p.interval = DEFAULT_POLL_INTERVAL
+	if !p.parsedCooldown {
+		p.cooldown = DEFAULT_POLL_COOLDOWN
 	}
 	if !p.parsedWatch {
 		p.dirs = DEFAULT_DIRS
@@ -57,7 +68,7 @@ func (p *argParser) parse(args []string) (interval time.Duration, dirs []string,
 		p.nginxCommand = DEFAULT_NGINX_COMMAND
 	}
 
-	return p.interval, p.dirs, p.nginxCommand
+	return p.cooldown, p.dirs, p.nginxCommand
 }
 
 func (p *argParser) parseStart() {
@@ -67,9 +78,9 @@ func (p *argParser) parseStart() {
 	switch p.args[0] {
 	case "--watch":
 		p.parseWatch()
-	case "--interval":
-		p.parseInterval()
-	case "--":
+	case "--cooldown":
+		p.parseCooldown()
+	case "--nginx-command":
 		p.parseNginxCommand()
 	default:
 		Panicf("unknown option '%s'\n"+USAGE, p.args[0])
@@ -87,9 +98,9 @@ func (p *argParser) parseWatch() {
 	p.dirs = append(p.dirs, p.args[1])
 	for idx, el := range p.args[2:] {
 		switch el {
-		case "--interval":
+		case "--cooldown":
 			p.args = p.args[idx+2:]
-			p.parseInterval()
+			p.parseCooldown()
 			return
 		case "--watch":
 			p.args = p.args[idx+2:]
@@ -105,29 +116,29 @@ func (p *argParser) parseWatch() {
 	}
 }
 
-func (p *argParser) parseInterval() {
-	if p.parsedInterval {
-		Panicf("duplicate '--interval' option\n" + USAGE)
+func (p *argParser) parseCooldown() {
+	if p.parsedCooldown {
+		Panicf("duplicate '--cooldown' option\n" + USAGE)
 	}
-	p.parsedInterval = true
+	p.parsedCooldown = true
 	if len(p.args) < 2 {
-		Panicf("empty '--interval' option\n" + USAGE)
+		Panicf("empty '--cooldown' option\n" + USAGE)
 	}
-	interval, err := strconv.Atoi(p.args[1])
+	cooldown, err := strconv.Atoi(p.args[1])
 	if err != nil {
-		Panicf("invalid value for '--interval' option, expected an integer, got '%v'", p.args[1])
+		Panicf("invalid value for '--cooldown' option, expected an integer, got '%v'", p.args[1])
 	}
-	if interval < 0 {
-		Panicf("watch interval must be >= 0, got '%v'", interval)
+	if cooldown < 0 {
+		Panicf("watch cooldown must be >= 0, got '%v'", cooldown)
 	}
-	p.interval = time.Duration(interval) * time.Second
+	p.cooldown = time.Duration(cooldown) * time.Second
 	p.args = p.args[2:]
 	p.parseStart()
 }
 
 func (p *argParser) parseNginxCommand() {
 	if len(p.args) < 2 {
-		Panicf("empty command after '--' option\n" + USAGE)
+		Panicf("empty command after '--nginx-command' option\n" + USAGE)
 	}
 	p.parsedNginxCommand = true
 	for _, el := range p.args[1:] {

@@ -7,7 +7,7 @@ import (
 
 type TestCase struct {
 	args         []string
-	pollInterval int
+	pollCooldown int
 	watchedDirs  []string
 	nginxCommand []string
 	err          bool
@@ -29,37 +29,37 @@ var testCaseSuit = []TestCase{
 		false,
 	},
 	{
-		[]string{"nginx-reloader", "--watch", "/", ".", "--interval", "1", "--", "nginx-entrypoint.sh", "-g", "compression off;"},
+		[]string{"nginx-reloader", "--watch", "/", ".", "--cooldown", "1", "--nginx-command", "nginx-entrypoint.sh", "-g", "compression off;"},
 		1,
 		[]string{"/", "."},
 		[]string{"nginx-entrypoint.sh", "-g", "compression off;"},
 		false,
 	},
 	{
-		[]string{"nginx-reloader", "--interval", "1"},
+		[]string{"nginx-reloader", "--cooldown", "1"},
 		1,
 		[]string{"/etc/nginx/conf.d"},
 		[]string{"nginx", "-g", "daemon off;"},
 		false,
 	},
-	// negative interval
+	// negative cooldown
 	{
-		args: []string{"nginx-reloader", "--interval", "-1"},
+		args: []string{"nginx-reloader", "--cooldown", "-1"},
 		err:  true,
 	},
 	// unknown option
 	{
-		args: []string{"nginx-reloader", "--interval", "1", "--unknown-option"},
+		args: []string{"nginx-reloader", "--cooldown", "1", "--unknown-option"},
 		err:  true,
 	},
 	// empty nginx entrypoint option '--'
 	{
-		args: []string{"nginx-reloader", "--interval", "1", "--"},
+		args: []string{"nginx-reloader", "--cooldown", "1", "--nginx-command"},
 		err:  true,
 	},
-	// duplicate --interval option
+	// duplicate --cooldown option
 	{
-		args: []string{"nginx-reloader", "--interval", "1", "--interval", "1"},
+		args: []string{"nginx-reloader", "--cooldown", "1", "--cooldown", "1"},
 		err:  true,
 	},
 	// duplicate --watch option
@@ -67,9 +67,9 @@ var testCaseSuit = []TestCase{
 		args: []string{"nginx-reloader", "--watch", "/", "--watch", "/"},
 		err:  true,
 	},
-	// empty --interval option
+	// empty --cooldown option
 	{
-		args: []string{"nginx-reloader", "--interval"},
+		args: []string{"nginx-reloader", "--cooldown"},
 		err:  true,
 	},
 	// unknown option
@@ -79,7 +79,7 @@ var testCaseSuit = []TestCase{
 	},
 	// empty nginx entrypoint option
 	{
-		args: []string{"nginx-reloader", "--"},
+		args: []string{"nginx-reloader", "--nginx-command"},
 		err:  true,
 	},
 }
@@ -87,7 +87,7 @@ var testCaseSuit = []TestCase{
 func TestParseOptions(t *testing.T) {
 	for _, expected := range testCaseSuit {
 
-		pollInterval, watchedDirs, nginxCommand, err := ParseOptions(expected.args)
+		pollCooldown, watchedDirs, nginxCommand, err := ParseOptions(expected.args)
 
 		if (err != nil) != expected.err {
 			if err != nil {
@@ -108,11 +108,11 @@ func TestParseOptions(t *testing.T) {
 			continue
 		}
 
-		expectedPollInterval := time.Duration(expected.pollInterval) * time.Second
-		if pollInterval != expectedPollInterval {
+		expectedPollCooldown := time.Duration(expected.pollCooldown) * time.Second
+		if pollCooldown != expectedPollCooldown {
 			t.Errorf(
-				"Expected %s pollInterval, got %s when parsing args %#v",
-				expectedPollInterval, pollInterval, expected.args,
+				"Expected %s pollCooldown, got %s when parsing args %#v",
+				expectedPollCooldown, pollCooldown, expected.args,
 			)
 		}
 

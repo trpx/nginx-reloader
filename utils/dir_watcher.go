@@ -8,14 +8,14 @@ type DirWatcher struct {
 	watchedDirs  []string
 	dirChecksum  string
 	ChangeChan   chan bool
-	pollInterval time.Duration
+	pollCooldown time.Duration
 }
 
-func MakeDirWatcher(watchedDirs []string, pollInterval time.Duration) DirWatcher {
+func MakeDirWatcher(watchedDirs []string, pollCooldown time.Duration) DirWatcher {
 	watcher := DirWatcher{
 		watchedDirs:  watchedDirs,
 		ChangeChan:   make(chan bool),
-		pollInterval: pollInterval,
+		pollCooldown: pollCooldown,
 	}
 	return watcher
 }
@@ -23,7 +23,7 @@ func MakeDirWatcher(watchedDirs []string, pollInterval time.Duration) DirWatcher
 func (w *DirWatcher) Watch() {
 	go func() {
 		for {
-			time.Sleep(w.pollInterval)
+			time.Sleep(w.pollCooldown)
 			knownChecksum := w.dirChecksum
 			w.CalcChecksum()
 			hasChanged := knownChecksum != w.dirChecksum

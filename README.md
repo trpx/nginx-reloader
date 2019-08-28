@@ -13,16 +13,26 @@ This util is meant to be used as an entrypoint in Docker containers to start
 
 ### usage:
 
-`nginx-reloader [--interval SECONDS] [--watch DIR [DIR ...]] [-- NGINX_ENTRYPOINT [NGINX OPTION [NGINX_OPTION ...]]]`
+`nginx-reloader [--cooldown SECONDS] [--watch DIR [DIR ...]] [--nginx-command NGINX_EXECUTABLE [NGINX_EXECUTABLE_OPTION [NGINX_EXECUTABLE_OPTION ...]]]`
 
-### defaults:
-`nginx-reloader` with no arguments defaults to  
- `nginx-reloader --interval 3 --watch /etc/nginx/conf.d -- nginx -g "daemon off;"`
+#### options:
+`--cooldown`  	
+- seconds to wait after each reload  
+  default: `3`
+  
+`--watch`
+- space-separated directories to watch  
+  default: `/etc/nginx/conf.d`
+
+`--nginx-command`
+- command to start nginx with  
+  default: `nginx -g "daemon off;"`
+
 
 ### example:
 
 e.g. command   
-`nginx-reloader --interval 10 --watch /etc/nginx/conf.d -- nginx -g "daemon off;"`
+`nginx-reloader --cooldown 10 --watch /etc/nginx/conf.d --nginx-command nginx -g "daemon off;"`
 
 - starts nginx with `nginx -g "daemon off;"` command
 - checksums the `*.conf` files in `/etc/nginx/conf.d` directory every `10` seconds

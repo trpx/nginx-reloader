@@ -11,12 +11,12 @@ import (
 // CLI
 func main() {
 
-	pollInterval, watchedDirs, nginxCommand, err := utils.ParseOptions(os.Args)
+	pollCooldown, watchedDirs, nginxCommand, err := utils.ParseOptions(os.Args)
 	if err != nil {
 		utils.Fatalf("%v", err)
 	}
 
-	err = StartNginxReloader(pollInterval, watchedDirs, nginxCommand)
+	err = StartNginxReloader(pollCooldown, watchedDirs, nginxCommand)
 
 	if err != nil {
 		utils.Fatalf("%v", err)
@@ -24,7 +24,7 @@ func main() {
 }
 
 // Programmatic API
-func StartNginxReloader(pollInterval time.Duration, watchedDirs []string, nginxCommand []string) (err error) {
+func StartNginxReloader(pollCooldown time.Duration, watchedDirs []string, nginxCommand []string) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = errors.New(fmt.Sprintf("%v", r))
@@ -33,7 +33,7 @@ func StartNginxReloader(pollInterval time.Duration, watchedDirs []string, nginxC
 
 	validateWatchedDirs(watchedDirs)
 
-	watcher := utils.MakeDirWatcher(watchedDirs, pollInterval)
+	watcher := utils.MakeDirWatcher(watchedDirs, pollCooldown)
 
 	watcher.CalcChecksum()
 
