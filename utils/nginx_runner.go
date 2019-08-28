@@ -11,21 +11,21 @@ type NginxRunner struct {
 	nginxProc    *os.Process
 	signalsChan  chan os.Signal
 	changeChan   chan bool
-	NginxOptions []string
+	NginxCommand []string
 }
 
-func MakeNginxRunner(changeChan chan bool, nginxOptions []string) NginxRunner {
+func MakeNginxRunner(changeChan chan bool, nginxCommand []string) NginxRunner {
 	nginxRunner := NginxRunner{
 		signalsChan:  make(chan os.Signal),
 		changeChan:   changeChan,
-		NginxOptions: nginxOptions,
+		NginxCommand: nginxCommand,
 	}
 	return nginxRunner
 }
 
 func (r *NginxRunner) StartNginx() *exec.Cmd {
 	r.listenSignals()
-	cmd := exec.Command("nginx", r.NginxOptions...)
+	cmd := exec.Command(r.NginxCommand[0], r.NginxCommand[1:]...)
 	err := cmd.Start()
 	if err != nil {
 		Panicf("couldn't start nginx:\n%v\n", err)
