@@ -1,9 +1,5 @@
 
-# Alpha
-
-Be warned: for now tested only manually, seems too be working, but automated tests are yet to come.
-
-## Usage
+# Usage
 
 This util is meant to be used as an entrypoint in Docker containers to start
  `nginx` and reload it when `*.conf` files change.
