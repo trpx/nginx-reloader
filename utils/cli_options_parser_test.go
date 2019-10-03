@@ -15,6 +15,13 @@ type TestCase struct {
 
 var testCaseSuit = []TestCase{
 	{
+		[]string{"nginx-reloader", "--cooldown", "3", "--watch", "/etc/nginx/conf.d", "--nginx-command", "nginx", "-g", "daemon off;"},
+		3,
+		[]string{"/etc/nginx/conf.d"},
+		[]string{"nginx", "-g", "daemon off;"},
+		false,
+	},
+	{
 		[]string{"nginx-reloader", "--watch", "/"},
 		3,
 		[]string{"/"},
@@ -52,7 +59,7 @@ var testCaseSuit = []TestCase{
 		args: []string{"nginx-reloader", "--cooldown", "1", "--unknown-option"},
 		err:  true,
 	},
-	// empty nginx entrypoint option '--'
+	// empty nginx entrypoint option '--nginx-command'
 	{
 		args: []string{"nginx-reloader", "--cooldown", "1", "--nginx-command"},
 		err:  true,

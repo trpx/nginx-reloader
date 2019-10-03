@@ -106,7 +106,7 @@ func (p *argParser) parseWatch() {
 			p.args = p.args[idx+2:]
 			p.parseWatch()
 			return
-		case "--":
+		case "--nginx-command":
 			p.args = p.args[idx+2:]
 			p.parseNginxCommand()
 			return
